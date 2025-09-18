@@ -9,21 +9,15 @@ import numpy as np
 from transformers import ViTModel, ViTFeatureExtractor
 import requests
 
+# =========================================================
+# Dispositivo
+# =========================================================
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # =========================================================
 # Modelo ViT Multilabel
 # =========================================================
-
-
-MODEL_URL = "https://huggingface.co/pehgamarra/vit_regiao_especie/upload/main/vit_multilabel_model.pth"
-MODEL_PATH = "vit_multilabel_model.pth"
-
-if not os.path.exists(MODEL_PATH):
-    r = requests.get(MODEL_URL, allow_redirects=True)
-    open(MODEL_PATH, 'wb').write(r.content)
-
-model = torch.load(MODEL_PATH)
-model.eval()
 
 class ViTMultilabel(nn.Module):
     def __init__(self, num_regioes, num_especies):
@@ -43,6 +37,20 @@ class ViTMultilabel(nn.Module):
         esp_logits = self.classifier_especie(agg)
         return reg_logits, esp_logits
 
+
+MODEL_URL = "https://huggingface.co/pehgamarra/vit_regiao_especie/upload/main/vit_multilabel_model.pth"
+MODEL_PATH = "vit_multilabel_model.pth"
+
+if not os.path.exists(MODEL_PATH):
+    r = requests.get(MODEL_URL, allow_redirects=True)
+    open(MODEL_PATH, 'wb').write(r.content)
+
+model = ViTMultilabel(num_regioes=6, num_especies=7)
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+model.to(device)
+model.eval()
+
+
 # =========================================================
 # Configuração da página
 # =========================================================
@@ -56,11 +64,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# =========================================================
-# Dispositivo
-# =========================================================
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # =========================================================
 # Carregar recursos automaticamente
