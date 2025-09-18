@@ -73,15 +73,19 @@ st.markdown(
 @st.cache_resource(show_spinner=True)
 def load_assets():
     # encoders
+    st.info("Carregando encoders...")
     le_regiao = joblib.load("le_regiao.pkl")
     le_especie = joblib.load("le_especie.pkl")
     # modelo
+    st.info("Inicializando modelo...")
     model = ViTMultilabel(len(le_regiao.classes_), len(le_especie.classes_))
     model.load_state_dict(torch.load("vit_multilabel_model.pth", map_location=device))
     model.to(device)
     model.eval()
     # feature extractor
+    st.info("Carregando feature extractor...")
     feature_extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224")
+    st.info("Pronto para classificar!")
     return model, feature_extractor, le_regiao, le_especie
 
 model, feature_extractor, le_regiao, le_especie = load_assets()
