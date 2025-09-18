@@ -7,10 +7,23 @@ import joblib
 import os
 import numpy as np
 from transformers import ViTModel, ViTFeatureExtractor
+import requests
+
 
 # =========================================================
 # Modelo ViT Multilabel
 # =========================================================
+
+
+MODEL_URL = "https://huggingface.co/pehgamarra/vit_regiao_especie/upload/main/vit_multilabel_model.pth"
+MODEL_PATH = "vit_multilabel_model.pth"
+
+if not os.path.exists(MODEL_PATH):
+    r = requests.get(MODEL_URL, allow_redirects=True)
+    open(MODEL_PATH, 'wb').write(r.content)
+
+model = torch.load(MODEL_PATH)
+model.eval()
 
 class ViTMultilabel(nn.Module):
     def __init__(self, num_regioes, num_especies):
