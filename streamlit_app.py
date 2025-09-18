@@ -76,8 +76,8 @@ model, feature_extractor, le_regiao, le_especie = load_assets()
 uploaded_image = st.file_uploader("### Arraste/solte uma imagem de raio-X", type=["png","jpg","jpeg","bmp","tiff"])
 if uploaded_image:
     image = Image.open(uploaded_image).convert("RGB")
-    image.thumbnail((360, 360))
-    st.image(image, caption="Miniatura da imagem", use_container_width=False)
+    image.thumbnail((180, 180))
+    st.image(image, use_container_width=False)
 
 # =========================================================
 # Predição
@@ -111,6 +111,17 @@ if st.button("Classificar imagem", type="primary", use_container_width=True):
     else:
         with st.spinner("Classificando..."):
             reg_label, reg_conf, esp_label, esp_conf = predict_image(image)
-            st.markdown("### Resultado")
-            st.write(f"**Espécie:** {esp_label} — Confiança: {esp_conf:.1f}%")
-            st.write(f"**Região:** {reg_label} — Confiança: {reg_conf:.1f}%")
+            
+            reg_label = reg_label.strip("[]'\"")
+            reg_label = reg_label.capitalize()
+            esp_label = esp_label.capitalize()
+
+            with st.chat_message("user", avatar="🐾"):
+                st.markdown(f"**Espécie:** {esp_label}")
+                st.markdown(f"<span style='font-size: 0.9em; color: gray;'>Confiança: {esp_conf:.1f}%</span>", unsafe_allow_html=True)
+
+            with st.chat_message("user", avatar="🦴"):
+                st.markdown(f"**Região:** {reg_label}")
+                st.markdown(f"<span style='font-size: 0.9em; color: gray;'>Confiança: {reg_conf:.1f}%</span>", unsafe_allow_html=True)
+
+
