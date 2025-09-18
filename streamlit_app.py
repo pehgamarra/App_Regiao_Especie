@@ -1,4 +1,3 @@
-# streamlit_app.py
 import streamlit as st
 from PIL import Image
 import torch
@@ -12,6 +11,7 @@ from transformers import ViTModel, ViTFeatureExtractor
 # =========================================================
 # Modelo ViT Multilabel
 # =========================================================
+
 class ViTMultilabel(nn.Module):
     def __init__(self, num_regioes, num_especies):
         super(ViTMultilabel, self).__init__()
@@ -33,6 +33,7 @@ class ViTMultilabel(nn.Module):
 # =========================================================
 # Configuração da página
 # =========================================================
+
 st.set_page_config(page_title="Classificador Raio-X", layout="centered", initial_sidebar_state="auto", page_icon="🩻")
 st.markdown(
     """
@@ -45,11 +46,13 @@ st.markdown(
 # =========================================================
 # Dispositivo
 # =========================================================
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # =========================================================
 # Carregar recursos automaticamente
 # =========================================================
+
 @st.cache_resource(show_spinner=True)
 def load_assets():
     # encoders
@@ -65,19 +68,21 @@ def load_assets():
     return model, feature_extractor, le_regiao, le_especie
 
 model, feature_extractor, le_regiao, le_especie = load_assets()
-st.markdown("---")
 
 # =========================================================
 # Upload de imagem
 # =========================================================
+
 uploaded_image = st.file_uploader("### Arraste/solte uma imagem de raio-X", type=["png","jpg","jpeg","bmp","tiff"])
 if uploaded_image:
     image = Image.open(uploaded_image).convert("RGB")
-    st.image(image, caption="Imagem carregada", use_container_width =True)
+    image.thumbnail((360, 360))
+    st.image(image, caption="Miniatura da imagem", use_container_width=False)
 
 # =========================================================
 # Predição
 # =========================================================
+
 def predict_image(image):
     inputs = feature_extractor(images=image, return_tensors="pt")
     pixel_values = inputs['pixel_values'].unsqueeze(1).to(device)  # 1 exame, 1 imagem
@@ -99,7 +104,8 @@ def predict_image(image):
 # =========================================================
 # Botão para classificar
 # =========================================================
-if st.button("Classificar imagem"):
+
+if st.button("Classificar imagem", type="primary", use_container_width=True):
     if not uploaded_image:
         st.error("Nenhuma imagem carregada!")
     else:
