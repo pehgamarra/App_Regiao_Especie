@@ -38,7 +38,7 @@ class ViTMultilabel(nn.Module):
         return reg_logits, esp_logits
 
 
-MODEL_URL = "https://huggingface.co/pehgamarra/vit_regiao_especie/upload/main/vit_multilabel_model.pth"
+MODEL_URL = "https://huggingface.co/pehgamarra/vit_regiao_especie/resolve/main/vit_multilabel_model.pth"
 MODEL_PATH = "vit_multilabel_model.pth"
 
 if not os.path.exists(MODEL_PATH):
@@ -46,6 +46,7 @@ if not os.path.exists(MODEL_PATH):
     open(MODEL_PATH, 'wb').write(r.content)
 
 model = ViTMultilabel(num_regioes=6, num_especies=7)
+state_dict = torch.load(MODEL_PATH, map_location=device, weights_only=False)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.to(device)
 model.eval()
