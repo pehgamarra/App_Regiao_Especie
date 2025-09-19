@@ -6,11 +6,11 @@ import torch.nn.functional as F
 import joblib
 import os
 import numpy as np
-from transformers import ViTModel, ViTImageProcessor  # Mudança aqui
+from transformers import ViTModel, ViTImageProcessor
 import requests
 
 # =========================================================
-# Configuração da página (DEVE vir antes de qualquer st.xxx)
+# Configuração da página
 # =========================================================
 st.set_page_config(page_title="Classificador Raio-X", layout="centered", initial_sidebar_state="auto", page_icon="🩻")
 
@@ -55,6 +55,7 @@ st.markdown(
 # =========================================================
 # Funções de carregamento otimizadas
 # =========================================================
+
 @st.cache_resource(show_spinner=False)
 def download_model():
     """Download do modelo se necessário"""
@@ -62,7 +63,6 @@ def download_model():
     MODEL_PATH = "vit_multilabel_model.pth"
     
     if not os.path.exists(MODEL_PATH):
-        st.info("Baixando modelo...")
         try:
             r = requests.get(MODEL_URL, allow_redirects=True, timeout=60)
             r.raise_for_status()
@@ -77,7 +77,6 @@ def download_model():
 def load_encoders():
     """Carrega os label encoders"""
     try:
-        st.info("Carregando encoders...")
         le_regiao = joblib.load("le_regiao.pkl")
         le_especie = joblib.load("le_especie.pkl")
         return le_regiao, le_especie
@@ -89,9 +88,6 @@ def load_encoders():
 def load_model_and_processor(_le_regiao, _le_especie, model_path):
     """Carrega modelo e processador"""
     try:
-        st.info("Inicializando modelo...")
-        
-        # Inicializar modelo
         model = ViTMultilabel(len(_le_regiao.classes_), len(_le_especie.classes_))
         
         # Carregar state_dict
@@ -101,10 +97,7 @@ def load_model_and_processor(_le_regiao, _le_especie, model_path):
         model.eval()
         
         # Carregar processador (corrigido)
-        st.info("Carregando processador de imagens...")
         processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224")
-        
-        st.success("Sistema pronto!")
         return model, processor
         
     except Exception as e:
@@ -143,9 +136,8 @@ if uploaded_image:
 # =========================================================
 def predict_image(image):
     try:
-        # Usar o processador corrigido
         inputs = feature_extractor(images=image, return_tensors="pt")
-        pixel_values = inputs['pixel_values'].unsqueeze(1).to(device)  # 1 exame, 1 imagem
+        pixel_values = inputs['pixel_values'].unsqueeze(1).to(device)
 
         with torch.no_grad():
             reg_logits, esp_logits = model(pixel_values)
